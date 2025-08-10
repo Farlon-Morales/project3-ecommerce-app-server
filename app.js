@@ -16,9 +16,11 @@ const app = express();
 
 // ⬇️ Allow requests from your frontend during development
 // Without this, browser security (CORS) will block your frontend from calling your backend
+// ✅ Updated to allow credentials (cookies, auth headers) from your frontend
 app.use(
   cors({
     origin: "http://localhost:5173", // React/Vite dev server origin
+    credentials: true,               // <== Allow cookies/credentials
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })

@@ -41,6 +41,9 @@ const productSchema = new Schema(
     images: [String],
     thumbnail: String,
     category: { type: String, required: true },
+
+    // 👇 NEW: the user who created this product (required for ownership checks)
+    owner: { type: Schema.Types.ObjectId, ref: "User", required: true },
   },
   {
     timestamps: true,
