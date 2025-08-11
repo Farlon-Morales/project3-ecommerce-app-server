@@ -19,7 +19,7 @@ const app = express();
 // ✅ Updated to allow credentials (cookies, auth headers) from your frontend
 app.use(
   cors({
-    origin: "http://localhost:5173", // React/Vite dev server origin
+    origin: "http://localhost:5174", // React/Vite dev server origin
     credentials: true,               // <== Allow cookies/credentials
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -41,6 +41,10 @@ app.use("/auth", authRoutes);
 // ℹ️ Product routes for listing, creating, updating products
 const productRoutes = require("./routes/product.routes");
 app.use("/products", productRoutes);
+
+// ℹ️ Review routes for listing/creating/updating/deleting reviews
+const reviewRoutes = require("./routes/review.routes");
+app.use("/", reviewRoutes);
 
 // ❗ To handle errors. Routes that don't exist or errors that you handle in specific routes
 require("./error-handling")(app);

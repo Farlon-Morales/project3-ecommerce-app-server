@@ -12,6 +12,15 @@ router.get("/", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// GET /products/:id - public (Read one)
+router.get("/:id", async (req, res, next) => {
+  try {
+    const product = await Product.findById(req.params.id).populate("owner", "name email");
+    if (!product) return res.status(404).json({ message: "Product not found" });
+    res.json(product);
+  } catch (err) { next(err); }
+});
+
 // POST /products - protected (sets owner from JWT)
 router.post("/", isAuthenticated, async (req, res, next) => {
   try {
@@ -21,7 +30,7 @@ router.post("/", isAuthenticated, async (req, res, next) => {
       return res.status(400).json({ message: "title, price, category are required" });
     }
 
-    // 👇 owner comes from verified JWT
+    // owner comes from verified JWT
     const owner = req.payload._id;
 
     const payload = { title, description, price, category, owner };
@@ -50,7 +59,7 @@ router.delete("/:id", isAuthenticated, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// (Optional) PUT/PATCH with same ownership check
+// PATCH /products/:id - protected (edit product; only owner can edit)
 router.patch("/:id", isAuthenticated, async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -63,7 +72,16 @@ router.patch("/:id", isAuthenticated, async (req, res, next) => {
       return res.status(403).json({ message: "Not allowed to edit this product" });
     }
 
-    const updated = await Product.findByIdAndUpdate(id, req.body, { new: true });
+    // minimal safe mapping for updates
+    const { title, description, price, imageUrl, category } = req.body;
+    const update = {};
+    if (title !== undefined) update.title = title;
+    if (description !== undefined) update.description = description;
+    if (price !== undefined) update.price = price;
+    if (category !== undefined) update.category = category;
+    if (imageUrl !== undefined) update.thumbnail = imageUrl;
+
+    const updated = await Product.findByIdAndUpdate(id, update, { new: true, runValidators: true });
     res.json(updated);
   } catch (err) { next(err); }
 });
