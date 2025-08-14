@@ -1,7 +1,7 @@
 // routes/review.routes.js
 const router = require("express").Router();
 const mongoose = require("mongoose");
-const Review = require("../models/Review.model");
+const Review = require("../models/review.model");
 const Product = require("../models/product.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 
