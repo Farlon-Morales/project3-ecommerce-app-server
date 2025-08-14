@@ -1,26 +1,26 @@
 // ℹ️ Gets access to environment variables/settings
-// https://www.npmjs.com/package/dotenv
 require("dotenv").config();
 
 // ℹ️ Connects to the database
 require("./db");
 
 // Handles http requests (express is node js framework)
-// https://www.npmjs.com/package/express
 const express = require("express");
-
-// ℹ️ Package that allows cross-origin requests (frontend <-> backend communication)
-const cors = require("cors"); // <== NEW
+const cors = require("cors"); 
+const mongoose = require("mongoose");
 
 const app = express();
 
-// ⬇️ Allow requests from your frontend during development
-// Without this, browser security (CORS) will block your frontend from calling your backend
-// ✅ Updated to allow credentials (cookies, auth headers) from your frontend
+// Allow requests from your frontend during development and allow Postman
+const allowedOrigins = ["http://localhost:5173"];
+
 app.use(
   cors({
-    origin: "http://localhost:5173", // React/Vite dev server origin
-    credentials: true,               // <== Allow cookies/credentials
+    origin: (origin, cb) => {
+      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+      return cb(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -30,23 +30,30 @@ app.use(
 require("./config")(app);
 
 // 👇 Start handling routes here
-// ℹ️ This is your index route (e.g., GET /api)
 const indexRoutes = require("./routes/index.routes");
 app.use("/api", indexRoutes);
 
-// ℹ️ Auth routes for signup, login, and verification
 const authRoutes = require("./routes/auth.routes");
 app.use("/auth", authRoutes);
 
-// ℹ️ Product routes for listing, creating, updating products
 const productRoutes = require("./routes/product.routes");
 app.use("/products", productRoutes);
 
-// ℹ️ Review routes for listing/creating/updating/deleting reviews
 const reviewRoutes = require("./routes/review.routes");
 app.use("/", reviewRoutes);
 
-// ❗ To handle errors. Routes that don't exist or errors that you handle in specific routes
+// Health check route
+app.get("/health", (req, res) => {
+  const s = mongoose.connection.readyState; // 0=disc,1=conn,2=connecting,3=disconnecting
+  res.json({
+    status: "ok",
+    mongoState: s,
+    host: mongoose.connection.host,
+    db: mongoose.connection.name,
+  });
+});
+
+// ❗ To handle errors
 require("./error-handling")(app);
 
 module.exports = app;
