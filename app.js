@@ -11,12 +11,16 @@ const mongoose = require("mongoose");
 
 const app = express();
 
-// Allow requests from your frontend during development and allow Postman
-const allowedOrigins = ["http://localhost:5173"];
+// ✅ Allow requests from local dev and deployed Netlify frontend
+const allowedOrigins = [
+  "http://localhost:5173", // local dev
+  "https://project3-ecommerce-app-client.netlify.app" // deployed frontend
+];
 
 app.use(
   cors({
     origin: (origin, cb) => {
+      // Allow server-to-server calls (no origin), Postman, local dev, and your Netlify frontend
       if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
       return cb(new Error("Not allowed by CORS"));
     },
